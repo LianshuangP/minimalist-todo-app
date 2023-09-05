@@ -1,0 +1,94 @@
+<%- include('./partials/header') %>
+
+<nav class="navbar navbar-light bg-light">
+    <a class="navbar-brand mb-0 h1" href="/">Minimalist Todo App</a>
+</nav>
+
+<div class="container mt-5">
+    <form action="/todo/add/todo" method="POST" class="d-flex" id="addTodoForm">
+        <input type="text" name="todo" class="form-control" placeholder="Say something here...">
+        <input type="submit" id="addTodoBtn" value="Add todo" class="btn btn-md btn-primary mx-2">
+    </form>
+
+    <ul class="list-group my-5" id="todoList">
+        <% if (todos && todos.length > 0) { %>
+            <% todos.forEach(todo => { %>
+                <div class="d-flex align-items-center" data-id="<%= todo._id %>">
+                    <li class="list-group-item"><%= todo.todo %></li>
+
+                    <form id="deleteForm_<%= todo._id %>" action="/todo/delete/todo/<%= todo._id %>" method="POST">
+                        <input type="hidden" name="_method" value="DELETE">
+                        <button type="button" onclick="deleteTodo('<%= todo._id %>')" class="btn btn-danger btn-md ml-1">Delete</button>
+                    </form>
+                </div>
+            <% }); %>
+        <% } else { %>
+            <p>No todos available.</p>
+        <% } %>
+    </ul>
+</div>
+
+<script>
+
+    const todoList = document.getElementById('todoList');
+
+    function addTodo() {
+        const todoInput = document.querySelector('input[name="todo"]');
+        const todoText = todoInput.value.trim();
+
+        if (todoText === '') {
+            return;
+        }
+
+        fetch('/todo/add/todo', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ todo: todoText }),
+        })
+        .then(response => {
+            if (response.ok) {
+                response.json().then(newTodo => { 
+                    const newTodoItem = document.createElement('div');
+                    newTodoItem.className = 'd-flex align-items-center';
+                    newTodoItem.dataset.id = newTodo._id; 
+                    newTodoItem.innerHTML = `<li class="list-group-item">${newTodo.todo}</li>
+                    <form id="deleteForm_${newTodo._id}" action="/todo/delete/todo/${newTodo._id}" method="POST">
+                        <input type="hidden" name="_method" value="DELETE">
+                        <button type="button" onclick="deleteTodo('${newTodo._id}')" class="btn btn-danger btn-md ml-1">Delete</button>
+                    </form>`;
+                    todoList.appendChild(newTodoItem);
+
+                    todoInput.value = '';
+                });
+            } else {
+                console.error('Failed to add todo');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+        });
+    }
+
+    function deleteTodo(todoId) {
+        fetch(`/todo/delete/todo/${todoId}`, {
+            method: 'DELETE',
+        })
+        .then(response => {
+            if (response.ok) {
+                const todoItemToRemove = todoList.querySelector(`div[data-id="${todoId}"]`);
+                if (todoItemToRemove) {
+                    todoList.removeChild(todoItemToRemove);
+                }
+            } else {
+                console.error('Failed to delete todo');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+        });
+    }
+</script>
+
+<%- include('./partials/footer') %>
