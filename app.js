@@ -3,12 +3,18 @@ const mongoose = require('mongoose');
 const authRoutes = require('./routes/auth');
 const loginRoutes = require('./routes/login');
 const todoRoutes = require('./routes/todo');
-require('dotenv').config(); 
+require('dotenv').config();
+
 
 const app = express(); 
 
 //mongoDB connection
 const connectionString = process.env.MONGODB_URI; 
+
+if (!process.env.MONGODB_URI) {
+    console.error('MongoDB connectionString not configured');
+    process.exit(1);
+  }
 
 mongoose.connect(connectionString, {
     useNewUrlParser: true,
@@ -19,6 +25,7 @@ mongoose.connect(connectionString, {
 })
 .catch((err) =>{
     console.error('MongoDB connection error', err)
+    process.exit(1);
 });
 
 
