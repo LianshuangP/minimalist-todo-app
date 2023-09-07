@@ -3,11 +3,12 @@ const mongoose = require('mongoose');
 const authRoutes = require('./routes/auth');
 const loginRoutes = require('./routes/login');
 const todoRoutes = require('./routes/todo');
+require('dotenv').config(); 
 
 const app = express(); 
 
 //mongoDB connection
-const connectionString = 'mongodb+srv://lianshuangpucheu:mongodbtest2023@cluster0.eviezi0.mongodb.net/?retryWrites=true&w=majority'
+const connectionString = process.env.MONGODB_URI; 
 
 mongoose.connect(connectionString, {
     useNewUrlParser: true,
@@ -35,5 +36,5 @@ app.use('/todo', todoRoutes);
 
 
 //server
-
-app.listen(3000,() => console.log("Server started listening on port: 3000"))
+const port = process.env.PORT || 3000;
+app.listen(port, () => console.log(`Server started listening on port: ${port}`));
